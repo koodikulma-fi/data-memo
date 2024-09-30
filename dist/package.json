@@ -1,7 +1,7 @@
 {
   "name": "data-memo",
   "version": "1.0.0",
-  "description": "Simple JS/TS tools to help reuse data.",
+  "description": "Simple JS/TS data reuse and index managing tools.",
   "keywords": [
     "DataMemo",
     "data-memo",
