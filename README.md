@@ -32,7 +32,7 @@ There are 3 kinds of tools available.
 
 ## 1. NUMERIC ARRAY HELPERS (doc)
 
-- The numeric array helpers (`numberRange`, `cleanIndex`, `orderedIndex`, `orderArray`) help with simple indexing needs.
+- Numeric helpers (`numberRange`, `cleanIndex`, `orderedIndex`, `orderArray`) for simple indexing needs.
 
 ### library - numeric: `numberRange`
 
