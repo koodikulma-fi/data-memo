@@ -35,8 +35,5 @@
       "require": "./data-memo.js"
     },
     "./package.json": "./package.json"
-  },
-  "dependencies": {
-    "mixin-types": "^1.0.0"
   }
 }
