@@ -73,6 +73,10 @@ export function areEqual(a: any, b: any, nDepth = -1): boolean {
                 break;
             case Set:
                 isArr = true;
+                // Pre-check the size - to not convert in vain.
+                if (a.size !== b.size)
+                    return false;
+                // Convert to array.
                 a = [...a];
                 b = [...b];
                 break;
@@ -149,7 +153,7 @@ export function areEqual(a: any, b: any, nDepth = -1): boolean {
  * 
  * ```
  */
-export function deepCopy<T extends any = any>(obj: T, nDepth = -1): T {
+export function deepCopy<T = any>(obj: T, nDepth = -1): T {
     // Simple.
     if (!obj || !nDepth || typeof obj !== "object")
         return obj;

@@ -223,7 +223,7 @@ declare function areEqual(a: any, b: any, nDepth?: number): boolean;
  *
  * ```
  */
-declare function deepCopy<T extends any = any>(obj: T, nDepth?: number): T;
+declare function deepCopy<T = any>(obj: T, nDepth?: number): T;
 /** Helper to compare a dictionary/object against another using a compareBy dictionary for update modes - only compares the properties of the compareBy dictionary.
  * - For example, let's say a class instance has `{ props, state }` here, so compareBy would define the comparison modes for each: `{ props: 1, state: "always" }`.
  * - Returns false if had differences. Note that in "always" mode even identical values are considered different, so returns true for any.
