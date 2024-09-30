@@ -1,0 +1,54 @@
+{
+  "name": "data-memo",
+  "version": "1.0.0",
+  "description": "Simple JS/TS tools to help reuse data.",
+  "keywords": [
+    "DataMemo",
+    "data-memo",
+    "data memo",
+    "data",
+    "memo",
+    "memory",
+    "use",
+    "reuse",
+    "flow",
+    "tools",
+    "web",
+    "js",
+    "ts",
+    "library"
+  ],
+  "homepage": "https://github.com/koodikulma-fi/data-memo",
+  "author": "Mikael Saurén",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koodikulma-fi/data-memo.git"
+  },
+  "module": "./dist/data-memo.module.js",
+  "main": "./dist/data-memo.js",
+  "types": "./dist/data-memo.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/data-memo.module.js",
+      "require": "./dist/data-memo.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "tsc": "tsc -p tsconfig.json",
+    "build": "tsc && rollup -c rollup.config.js"
+  },
+  "devDependencies": {
+    "rollup": "^2.77.2",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "4.9"
+  }
+}

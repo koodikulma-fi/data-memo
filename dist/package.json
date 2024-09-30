@@ -1,0 +1,42 @@
+{
+  "name": "data-memo",
+  "version": "1.0.0",
+  "description": "Simple JS/TS tools to help reuse data.",
+  "keywords": [
+    "DataMemo",
+    "data-memo",
+    "data memo",
+    "data",
+    "memo",
+    "memory",
+    "use",
+    "reuse",
+    "flow",
+    "tools",
+    "web",
+    "js",
+    "ts",
+    "library"
+  ],
+  "homepage": "https://github.com/koodikulma-fi/data-memo",
+  "author": "Mikael Saurén",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koodikulma-fi/data-memo.git"
+  },
+  "module": "./data-memo.module.js",
+  "main": "./data-memo.js",
+  "types": "./data-memo.d.ts",
+  "exports": {
+    ".": {
+      "import": "./data-memo.module.js",
+      "require": "./data-memo.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "mixin-types": "^1.0.0"
+  }
+}
