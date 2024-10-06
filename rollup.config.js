@@ -41,6 +41,11 @@ export default [
         plugins: [
             terser({
                 ecma: 2015,
+                // mangle: {
+                //     // module: true,
+                //     keep_fnames: true,
+                //     keep_classnames: true,
+                // },
                 mangle: false,
                 compress: {
                     module: true,
@@ -67,6 +72,11 @@ export default [
         plugins: [
             terser({
                 ecma: 2015,
+                // mangle: {
+                //     // module: true,
+                //     keep_fnames: true,
+                //     keep_classnames: true,
+                // },
                 mangle: false,
                 compress: {
                     module: true,
