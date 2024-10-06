@@ -258,7 +258,7 @@ areEqualBy(a, b, { props: "never", state: "always" });      // false, since stat
 
 ### library - data: `createDataMemo`
 
-- `createDataMemo` helps to reuse data in simple local usages. By default, it only computes the data if any of the arguments have changed.
+- `createDataMemo` helps to reuse data by comparing arguments. By default, only recomputes if any arg was changed.
 
 ```typescript
 
