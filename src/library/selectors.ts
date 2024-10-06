@@ -2,7 +2,7 @@
 // - Imports - //
 
 // Library.
-import { areEqual, CompareDataDepthEnum, CompareDataDepthMode } from "./deep";
+import { areEqual, CompareDepthEnum, CompareDepthMode } from "./deep";
 
 
 // - Data typing helpers - //
@@ -17,7 +17,7 @@ export type DataExtractor<P extends any[] = any[], R = any> = (...args: P) => R;
 export type CreateDataSource<Params extends any[] = any[], Data = any> = <
     Extractor extends(...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?],
     Extracted extends ReturnType<Extractor> = ReturnType<Extractor>
->(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDataDepthMode) => (...args: Params) => Data;
+>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => (...args: Params) => Data;
 /** This helps to create a typed cached data selector by providing the types for the Params for extractor and Data for output of the selector.
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
@@ -25,7 +25,7 @@ export type CreateDataSource<Params extends any[] = any[], Data = any> = <
 export type CreateCachedSource<Params extends any[] = any[], Data = any> = <
     Extractor extends(...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?],
     Extracted extends ReturnType<Extractor> = ReturnType<Extractor>
->(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDataDepthMode) => (...args: Params) => Data;
+>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode) => (...args: Params) => Data;
 
 // Data trigger.
 /** Callback to run when the DataTrigger memory has changed (according to the comparison mode).
@@ -90,9 +90,9 @@ export type DataTriggerOnUnmount<Memory = any> = (currentMem: Memory, nextMem: M
  * 
  * ```
  */
-export function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth: number | CompareDataDepthMode = 1): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean {
+export function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth: number | CompareDepthMode = 1): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean {
     // Local memory.
-    const d = typeof depth === "string" ? CompareDataDepthEnum[depth] : depth;
+    const d = typeof depth === "string" ? CompareDepthEnum[depth] : depth;
     let onUnmount: DataTriggerOnUnmount<Memory> | undefined = undefined;
     // Return handler.
     return (newMemory: Memory, forceRun: boolean = false, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null): boolean => {
@@ -181,11 +181,11 @@ export function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMou
  * ```
  * 
  */
-export function createDataMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth: number | CompareDataDepthMode = 0): (...memory: MemoryArgs) => Data {
+export function createDataMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth: number | CompareDepthMode = 0): (...memory: MemoryArgs) => Data {
     // Local memory.
     let data: Data | undefined = undefined;
     let memoryArgs: any[] | undefined = undefined;
-    const d = typeof depth === "string" ? CompareDataDepthEnum[depth] : depth;
+    const d = typeof depth === "string" ? CompareDepthEnum[depth] : depth;
     // Return handler.
     return (...memory: MemoryArgs): Data => {
         // Can potentially reuse as we have already computed once.
@@ -267,13 +267,13 @@ export function createDataSource<
     Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[],
     Data extends any,
     Params extends any[],
->(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth: number | CompareDataDepthMode = 0): (...args: Params) => Data {
+>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth: number | CompareDepthMode = 0): (...args: Params) => Data {
     // Prepare.
     let extracted: any[] | readonly any[] | undefined = undefined;
     let data: Data = undefined as any;
     // Clean depth.
     // .. We add one to >= 0, since our extracted array is always new. If -1, -2 or -3, keep as is.
-    depth = typeof depth === "string" ? CompareDataDepthEnum[depth] : depth;
+    depth = typeof depth === "string" ? CompareDepthEnum[depth] : depth;
     const d = depth >= 0 ? depth + 1 : depth;
     // Return a function to do the selecting.
     return (...args: any[]): Data => {
@@ -369,7 +369,7 @@ export function createCachedSource<
     Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[],
     Data extends any,
     Params extends any[],
->(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth: number | CompareDataDepthMode = 0): (...args: Params) => Data {
+>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth: number | CompareDepthMode = 0): (...args: Params) => Data {
     // Memory.
     const cached: Record<string, (...args: Params) => Data> = {};
     // Return handler.

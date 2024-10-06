@@ -6,7 +6,7 @@
  * - Positive values can go however deep. Note that -1 means deep, but below -2 means will not check.
  * - Values are: "never" = -3, "always" = -2, "deep" = -1, "changed" = 0, "shallow" = 1, "double" = 2.
  */
-export enum CompareDataDepthEnum {
+export enum CompareDepthEnum {
     never = -3,
     always = -2,
     deep = -1,
@@ -21,7 +21,7 @@ export enum CompareDataDepthEnum {
  * - "double" is like "shallow" but any prop value that is object or array will do a further shallow comparison to determine if it has changed.
  * - "deep" compares all the way down recursively. Only use this if you it's really what you want - never use it with recursive objects (= with direct or indirect self references).
  */
-export type CompareDataDepthMode = keyof typeof CompareDataDepthEnum;
+export type CompareDepthMode = keyof typeof CompareDepthEnum;
 
 
 // - Totally static data helpers - // 
@@ -198,7 +198,7 @@ export function deepCopy<T = any>(obj: T, nDepth = -1): T {
 /** Helper to compare a dictionary/object against another using a compareBy dictionary for update modes - only compares the properties of the compareBy dictionary.
  * - For example, let's say a class instance has `{ props, state }` here, so compareBy would define the comparison modes for each: `{ props: 1, state: "always" }`.
  * - Returns false if had differences. Note that in "always" mode even identical values are considered different, so returns true for any. 
- * - -2 always, -1 deep, 0 changed, 1 shallow, 2 double, ... See the CompareDataDepthMode type for details.
+ * - -2 always, -1 deep, 0 changed, 1 shallow, 2 double, ... See the CompareDepthMode type for details.
  * 
  * ```
  *
@@ -224,13 +224,13 @@ export function deepCopy<T = any>(obj: T, nDepth = -1): T {
  * 
  * ```
  */
-export function areEqualBy(from: Record<string, any> | null | undefined, to: Record<string, any> | null | undefined, compareBy: Record<string, CompareDataDepthMode | number | any>): boolean {
+export function areEqualBy(from: Record<string, any> | null | undefined, to: Record<string, any> | null | undefined, compareBy: Record<string, CompareDepthMode | number | any>): boolean {
     // Loop each prop key in the compareBy dictionary.
     const eitherEmpty = !from || !to;
     for (const prop in compareBy) {
         // Prepare.
         const mode = compareBy[prop];
-        const nMode = typeof mode === "number" ? mode : CompareDataDepthEnum[mode as string] as number ?? 0;
+        const nMode = typeof mode === "number" ? mode : CompareDepthEnum[mode as string] as number ?? 0;
         // Never (-3) and always (-2) modes. The outcome is flipped as we're not asking about change but equality.
         if (nMode < -1) {
             // Always different - so never equal.

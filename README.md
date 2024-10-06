@@ -20,7 +20,7 @@ There are 3 kinds of tools available.
 ### [2. DEEP DATA METHODS](#2-deep-data-methods-doc)
 - Deep data methods `areEqual(a, b, level?)` and `deepCopy(anything, level?)` with custom level of depth (-1).
     * The methods support native JS Objects, Arrays, Maps, Sets and handling classes.
-- And `areEqualBy(a, b, compareBy)` for objects specialized to utilizing the `CompareDataDepthEnum`.
+- And `areEqualBy(a, b, compareBy)` for objects specialized to utilizing the `CompareDepthEnum`.
 
 ### [3. DATA MEMO HELPERS](#3-data-memo-helpers-doc)
 - `createDataTrigger` triggers a callback when reference data is changed from previous time.
@@ -223,7 +223,7 @@ areEqual(test, test, 0); // true, identical objects.
 ### library - deep: `areEqualBy`
 
 - The `areEqual(a, b, compareBy)` compares data in two objects/dictionaries according to compareBy dictionary.
-- The compareBy dictionary defines which properties to compare and how (using CompareDataDepthEnum).
+- The compareBy dictionary defines which properties to compare and how (using CompareDepthEnum).
 
 ```typescript
 

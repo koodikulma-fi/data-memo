@@ -164,7 +164,7 @@ declare function numberRange(startOrEnd: number, end?: number | null, stepSize?:
  * - Positive values can go however deep. Note that -1 means deep, but below -2 means will not check.
  * - Values are: "never" = -3, "always" = -2, "deep" = -1, "changed" = 0, "shallow" = 1, "double" = 2.
  */
-declare enum CompareDataDepthEnum {
+declare enum CompareDepthEnum {
     never = -3,
     always = -2,
     deep = -1,
@@ -179,7 +179,7 @@ declare enum CompareDataDepthEnum {
  * - "double" is like "shallow" but any prop value that is object or array will do a further shallow comparison to determine if it has changed.
  * - "deep" compares all the way down recursively. Only use this if you it's really what you want - never use it with recursive objects (= with direct or indirect self references).
  */
-type CompareDataDepthMode = keyof typeof CompareDataDepthEnum;
+type CompareDepthMode = keyof typeof CompareDepthEnum;
 /** General data comparison function with level for deepness.
  * - Supports Object, Array, Set, Map complex types and recognizes classes vs. objects.
  * - About arguments:
@@ -227,7 +227,7 @@ declare function deepCopy<T = any>(obj: T, nDepth?: number): T;
 /** Helper to compare a dictionary/object against another using a compareBy dictionary for update modes - only compares the properties of the compareBy dictionary.
  * - For example, let's say a class instance has `{ props, state }` here, so compareBy would define the comparison modes for each: `{ props: 1, state: "always" }`.
  * - Returns false if had differences. Note that in "always" mode even identical values are considered different, so returns true for any.
- * - -2 always, -1 deep, 0 changed, 1 shallow, 2 double, ... See the CompareDataDepthMode type for details.
+ * - -2 always, -1 deep, 0 changed, 1 shallow, 2 double, ... See the CompareDepthMode type for details.
  *
  * ```
  *
@@ -253,7 +253,7 @@ declare function deepCopy<T = any>(obj: T, nDepth?: number): T;
  *
  * ```
  */
-declare function areEqualBy(from: Record<string, any> | null | undefined, to: Record<string, any> | null | undefined, compareBy: Record<string, CompareDataDepthMode | number | any>): boolean;
+declare function areEqualBy(from: Record<string, any> | null | undefined, to: Record<string, any> | null | undefined, compareBy: Record<string, CompareDepthMode | number | any>): boolean;
 
 /** Type for a function whose job is to extract data from given arguments. */
 type DataExtractor<P extends any[] = any[], R = any> = (...args: P) => R;
@@ -261,12 +261,12 @@ type DataExtractor<P extends any[] = any[], R = any> = (...args: P) => R;
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
  */
-type CreateDataSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDataDepthMode) => (...args: Params) => Data;
+type CreateDataSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => (...args: Params) => Data;
 /** This helps to create a typed cached data selector by providing the types for the Params for extractor and Data for output of the selector.
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
  */
-type CreateCachedSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDataDepthMode) => (...args: Params) => Data;
+type CreateCachedSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode) => (...args: Params) => Data;
 /** Callback to run when the DataTrigger memory has changed (according to the comparison mode).
  * - If the callback returns a new callback function, it will be run when unmounting the callback.
  */
@@ -325,7 +325,7 @@ type DataTriggerOnUnmount<Memory = any> = (currentMem: Memory, nextMem: Memory) 
  *
  * ```
  */
-declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth?: number | CompareDataDepthMode): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean;
+declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth?: number | CompareDepthMode): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean;
 /** Create a data memo.
  * - First define a handler: `const onChange = createDataMemo((arg1, arg2) => { return "something"; });`.
  * - Then later in repeatable part of code get the value: `const myValue = onChange(arg1, arg2);`
@@ -383,7 +383,7 @@ declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMo
  * ```
  *
  */
-declare function createDataMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth?: number | CompareDataDepthMode): (...memory: MemoryArgs) => Data;
+declare function createDataMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth?: number | CompareDepthMode): (...memory: MemoryArgs) => Data;
 /** Create a data source (returns a function): Functions like createDataMemo but for data with an intermediary extractor.
  * - Give an extractor that extracts an array out of your customly defined arguments. Can return an array up to 20 typed members or more with `[...] as const` trick.
  * - Whenever the extracted output has changed, the producer callback is triggered.
@@ -437,7 +437,7 @@ declare function createDataMemo<Data extends any, MemoryArgs extends any[]>(prod
  *
  * ```
  */
-declare function createDataSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth?: number | CompareDataDepthMode): (...args: Params) => Data;
+declare function createDataSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode): (...args: Params) => Data;
 /** Create a cached data source (returns a function).
  * - Just like createDataSource but provides multiple sets of extraction and data memory.
  * - The key (string) for caching is derived by the 3rd argument which is a function that receives the source arguments: `(...origArgs, cached): string`.
@@ -501,6 +501,6 @@ declare function createDataSource<Extracted extends [any?, any?, any?, any?, any
  *
  * ```
  */
-declare function createCachedSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDataDepthMode): (...args: Params) => Data;
+declare function createCachedSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode): (...args: Params) => Data;
 
-export { CompareDataDepthEnum, CompareDataDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createDataMemo, createDataSource, createDataTrigger, deepCopy, numberRange, orderArray, orderedIndex };
+export { CompareDepthEnum, CompareDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createDataMemo, createDataSource, createDataTrigger, deepCopy, numberRange, orderArray, orderedIndex };
