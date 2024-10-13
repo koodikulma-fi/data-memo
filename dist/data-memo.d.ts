@@ -279,7 +279,7 @@ type DataTriggerOnUnmount<Memory = any> = (currentMem: Memory, nextMem: Memory) 
 /** Create a data memo.
  * - Usage:
  *      1. First define the (optional but often used) onMount callback to be triggered on memory change.
- *      2. Then define create a trigger: `const myTrigger = createDataTrigger(onMount, memory)`.
+ *      2. Then define create a trigger: `const myTrigger = createTrigger(onMount, memory)`.
  *      3. Then later in repeatable part of code call the trigger: `const didChange = myTrigger(newMemory);`
  * - Aboute triggering:
  *      - When calling the trigger you have actually 3 arguments: `(newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory>) => boolean`
@@ -295,7 +295,7 @@ type DataTriggerOnUnmount<Memory = any> = (currentMem: Memory, nextMem: Memory) 
  *
  * // Create a function that can be called to trigger a callback when the reference data is changed from the last time
  * type Memory = { id: number; text: string; };
- * const myTrigger = createDataTrigger<Memory>(
+ * const myTrigger = createTrigger<Memory>(
  *      // 1st arg is an optional (but often used) _mount_ callback.
  *      (newMem, oldMem) => {
  *          // Run upon change.
@@ -325,9 +325,9 @@ type DataTriggerOnUnmount<Memory = any> = (currentMem: Memory, nextMem: Memory) 
  *
  * ```
  */
-declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth?: number | CompareDepthMode): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean;
+declare function createTrigger<Memory extends any>(onMount?: DataTriggerOnMount<Memory>, memory?: Memory, depth?: number | CompareDepthMode): (newMemory: Memory, forceRun?: boolean, newOnMountIfChanged?: DataTriggerOnMount<Memory> | null) => boolean;
 /** Create a data memo.
- * - First define a handler: `const onChange = createDataMemo((arg1, arg2) => { return "something"; });`.
+ * - First define a handler: `const onChange = createMemo((arg1, arg2) => { return "something"; });`.
  * - Then later in repeatable part of code get the value: `const myValue = onChange(arg1, arg2);`
  * - About arguments:
  *      @param producer Defines the callback to produce the final data given the custom arguments.
@@ -342,7 +342,7 @@ declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMo
  * type Output = { winner: string | null; loser: string | null; difference: number; };
  *
  * // Create a function that can be called to return updated data if arguments changed.
- * const onResults = createDataMemo(
+ * const onResults = createMemo(
  *     // 1st arg is the producer callback that should return the desired data.
  *     // .. It's only triggered when either (a, b) is changed from last time.
  *     (a: Input, b: Input): Output => {
@@ -383,8 +383,8 @@ declare function createDataTrigger<Memory extends any>(onMount?: DataTriggerOnMo
  * ```
  *
  */
-declare function createDataMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth?: number | CompareDepthMode): (...memory: MemoryArgs) => Data;
-/** Create a data source (returns a function): Functions like createDataMemo but for data with an intermediary extractor.
+declare function createMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth?: number | CompareDepthMode): (...memory: MemoryArgs) => Data;
+/** Create a data source (returns a function): Functions like createMemo but for data with an intermediary extractor.
  * - Give an extractor that extracts an array out of your customly defined arguments. Can return an array up to 20 typed members or more with `[...] as const` trick.
  * - Whenever the extracted output has changed, the producer callback is triggered.
  *      * To control the level of comparsion, pass in the optional last arg for "depth". Defaults to 0: identity check on each argument (+ checks argment count).
@@ -503,4 +503,4 @@ declare function createDataSource<Extracted extends [any?, any?, any?, any?, any
  */
 declare function createCachedSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode): (...args: Params) => Data;
 
-export { CompareDepthEnum, CompareDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createDataMemo, createDataSource, createDataTrigger, deepCopy, numberRange, orderArray, orderedIndex };
+export { CompareDepthEnum, CompareDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createMemo as createDataMemo, createDataSource, createTrigger as createDataTrigger, createMemo, createTrigger, deepCopy, numberRange, orderArray, orderedIndex };
