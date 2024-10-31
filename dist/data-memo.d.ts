@@ -472,11 +472,11 @@ interface CachedSourceInterface<Params extends any[] = any[], Data extends any =
  * type MyCachedParams = [
  *      colorTheme: { mode?: "light" | "dark" },
  *      specialMode: boolean | undefined,
- *      cacheKey: string
+ *      cacheKey: "someKey" | "anotherKey"
  * ];
  *
  * // With pre-typing.
- * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData, "someKey" | "anotherKey">)(
+ * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData>)(
  *      // Extractor.
  *      (colorTheme, specialMode) => [colorTheme?.mode || "dark", specialMode || false],
  *      // Producer.
