@@ -415,7 +415,7 @@ type MyData = { theme: "dark" | "light"; special: boolean; }
 type MyCachedParams = [
     colorTheme: { mode?: "light" | "dark" },
     specialMode: boolean | undefined,
-    cacheKey: string
+    cacheKey: "someKey" | "anotherKey"
 ];
 
 // With pre-typing.

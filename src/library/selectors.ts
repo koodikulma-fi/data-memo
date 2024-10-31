@@ -17,15 +17,16 @@ export type DataExtractor<P extends any[] = any[], R = any> = (...args: P) => R;
 export type CreateDataSource<Params extends any[] = any[], Data = any> = <
     Extractor extends(...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?],
     Extracted extends ReturnType<Extractor> = ReturnType<Extractor>
->(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => (...args: Params) => Data;
+>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => ((...args: Params) => Data) & DataSourceInterface;
 /** This helps to create a typed cached data selector by providing the types for the Params for extractor and Data for output of the selector.
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
+ * - The CacheKey type is automatically inferred from the last item in Params type.
  */
-export type CreateCachedSource<Params extends any[] = any[], Data = any> = <
+export type CreateCachedSource<Params extends any[] = any[], Data = any, CacheKey extends string = string & (Params extends readonly [...unknown[], infer Last] ? Last : string)> = <
     Extractor extends(...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?],
     Extracted extends ReturnType<Extractor> = ReturnType<Extractor>
->(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode) => (...args: Params) => Data;
+>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<CacheKey, (...args: Params) => Data>]) => CacheKey, depth?: number | CompareDepthMode) => ((...args: Params) => Data) & CachedSourceInterface<Params, Data, CacheKey>;
 
 // Data trigger.
 /** Callback to run when the DataTrigger memory has changed (according to the comparison mode).
@@ -316,11 +317,11 @@ export function createDataSource<
 // - Create cached data source - //
 
 /** Typing for extra features on the returned selector function (after calling createCachedSource). */
-export interface CachedSourceInterface<Data extends any = any, Params extends any[] = any[]> {
+export interface CachedSourceInterface<Params extends any[] = any[], Data extends any = any, CacheKey extends string = string> {
     /** Clear existing cache totally. Optionally define which keys to clear, or a filterer to tell which should be cleaned (by returning `true`). */
-    clear: (onlyClearKeys?: string[] | ((key: string) => boolean)) => void;
+    clear: (onlyClearKeys?: CacheKey[] | ((key: CacheKey) => boolean)) => void;
     /** Get the cached memory. Can be mutated to affect cache. */
-    getCached: () => Record<string, (...args: Params) => Data>;
+    getCached: () => Partial<Record<CacheKey, (...args: Params) => Data>>;
 }
 
 /** Create a cached data source (returns a function).
@@ -345,7 +346,7 @@ export interface CachedSourceInterface<Data extends any = any, Params extends an
  * ];
  * 
  * // With pre-typing.
- * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData>)(
+ * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData, "someKey" | "anotherKey">)(
  *      // Extractor.
  *      (colorTheme, specialMode) => [colorTheme?.mode || "dark", specialMode || false],
  *      // Producer.
@@ -410,7 +411,7 @@ export function createCachedSource<
         return cached[cachedKey](...args as Params);
     };
     // Attach method for clearing.
-    (f as typeof f & CachedSourceInterface<Data, Params>).clear = (onlyKeys) => {
+    (f as typeof f & CachedSourceInterface<Params, Data>).clear = (onlyKeys) => {
         const isFunc = typeof onlyKeys === "function";
         for (const cKey of Object.keys(cached)) {
             // Skip.
@@ -420,7 +421,7 @@ export function createCachedSource<
             delete cached[cKey];
         }
     };
-    (f as typeof f & CachedSourceInterface<Data, Params>).getCached = () => cached;
+    (f as typeof f & CachedSourceInterface<Params, Data>).getCached = () => cached;
     // Return the function.
     return f as typeof f & CachedSourceInterface;
 }

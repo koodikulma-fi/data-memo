@@ -261,12 +261,13 @@ type DataExtractor<P extends any[] = any[], R = any> = (...args: P) => R;
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
  */
-type CreateDataSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => (...args: Params) => Data;
+type CreateDataSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode) => ((...args: Params) => Data) & DataSourceInterface;
 /** This helps to create a typed cached data selector by providing the types for the Params for extractor and Data for output of the selector.
  * - The type return is a function that can be used for triggering the effect (like in Redux).
  * - The extractor can return an array up to 20 typed members.
+ * - The CacheKey type is automatically inferred from the last item in Params type.
  */
-type CreateCachedSource<Params extends any[] = any[], Data = any> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode) => (...args: Params) => Data;
+type CreateCachedSource<Params extends any[] = any[], Data = any, CacheKey extends string = string & (Params extends readonly [...unknown[], infer Last] ? Last : string)> = <Extractor extends (...args: Params) => [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?], Extracted extends ReturnType<Extractor> = ReturnType<Extractor>>(extractor: Extractor, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<CacheKey, (...args: Params) => Data>]) => CacheKey, depth?: number | CompareDepthMode) => ((...args: Params) => Data) & CachedSourceInterface<Params, Data, CacheKey>;
 /** Callback to run when the DataTrigger memory has changed (according to the comparison mode).
  * - If the callback returns a new callback function, it will be run when unmounting the callback.
  */
@@ -447,11 +448,11 @@ interface DataSourceInterface {
  */
 declare function createDataSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode): ((...args: Params) => Data) & DataSourceInterface;
 /** Typing for extra features on the returned selector function (after calling createCachedSource). */
-interface CachedSourceInterface<Data extends any = any, Params extends any[] = any[]> {
+interface CachedSourceInterface<Params extends any[] = any[], Data extends any = any, CacheKey extends string = string> {
     /** Clear existing cache totally. Optionally define which keys to clear, or a filterer to tell which should be cleaned (by returning `true`). */
-    clear: (onlyClearKeys?: string[] | ((key: string) => boolean)) => void;
+    clear: (onlyClearKeys?: CacheKey[] | ((key: CacheKey) => boolean)) => void;
     /** Get the cached memory. Can be mutated to affect cache. */
-    getCached: () => Record<string, (...args: Params) => Data>;
+    getCached: () => Partial<Record<CacheKey, (...args: Params) => Data>>;
 }
 /** Create a cached data source (returns a function).
  * - Just like createDataSource but provides multiple sets of extraction and data memory.
@@ -475,7 +476,7 @@ interface CachedSourceInterface<Data extends any = any, Params extends any[] = a
  * ];
  *
  * // With pre-typing.
- * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData>)(
+ * const mySource = (createCachedSource as CreateCachedSource<MyCachedParams, MyData, "someKey" | "anotherKey">)(
  *      // Extractor.
  *      (colorTheme, specialMode) => [colorTheme?.mode || "dark", specialMode || false],
  *      // Producer.
