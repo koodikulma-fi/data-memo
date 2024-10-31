@@ -397,6 +397,9 @@ const val_FAIL = mySource({ mode: "FAIL" }, true); // The "FAIL" is red-underlin
 const val_MANUAL = mySource_MANUAL({ mode: "dark" }, true);
 const val_MANUAL_FAIL = mySource_MANUAL({ mode: "FAIL" }, true); // The "FAIL" is red-underlined.
 
+// Clear selector - forces a recalc on the next time.
+mySource.clear();
+
 ```
 
 ### library - data: `createCachedSource`
@@ -454,6 +457,12 @@ let val2_anotherKey = mySource(settings2, special2, "anotherKey");
 // Validate claims.
 val_someKey === val2_someKey // true.
 val_anotherKey === val2_anotherKey // true.
+
+// Clear cache.
+mySource.clear();                    // Clear everyhing.
+mySource.clear(["someKey"]);         // Clear specific keys.
+mySource.clear((key) => key.startsWith("some")); // Only clear cache by keys starting with "some".
+const cached = mySource.getCached(); // Get the whole cache - can be mutated.
 
 ```
 

@@ -210,6 +210,12 @@ export function createMemo<Data extends any, MemoryArgs extends any[]>(producer:
 
 // - Create data source - //
 
+/** Typing for extra features on the returned selector function (after calling createDataSource). */
+export interface DataSourceInterface {
+    /** Clears existing memory: effectively, forces a recalc on the next run. */
+    clear: () => void;
+}
+
 /** Create a data source (returns a function): Functions like createMemo but for data with an intermediary extractor.
  * - Give an extractor that extracts an array out of your customly defined arguments. Can return an array up to 20 typed members or more with `[...] as const` trick.
  * - Whenever the extracted output has changed, the producer callback is triggered.
@@ -261,13 +267,16 @@ export function createMemo<Data extends any, MemoryArgs extends any[]>(producer:
  * const val_MANUAL = mySource_MANUAL({ mode: "dark" }, true);
  * const val_MANUAL_FAIL = mySource_MANUAL({ mode: "FAIL" }, true); // The "FAIL" is red-underlined.
  * 
+ * // Clear selector - forces a recalc on the next time.
+ * mySource.clear();
+ * 
  * ```
  */
 export function createDataSource<
     Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[],
     Data extends any,
     Params extends any[],
->(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth: number | CompareDepthMode = 0): (...args: Params) => Data {
+>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth: number | CompareDepthMode = 0): ((...args: Params) => Data) & DataSourceInterface {
     // Prepare.
     let extracted: any[] | readonly any[] | undefined = undefined;
     let data: Data = undefined as any;
@@ -276,7 +285,7 @@ export function createDataSource<
     depth = typeof depth === "string" ? CompareDepthEnum[depth] : depth;
     const d = depth >= 0 ? depth + 1 : depth;
     // Return a function to do the selecting.
-    return (...args: any[]): Data => {
+    const f = (...args: any[]): Data => {
         // Extract new extracts.
         const newExtracted = extractor(...args as any);
         // Can reuse.
@@ -297,10 +306,22 @@ export function createDataSource<
         // Return the new data.
         return data;
     };
+    // Attach method for clearing.
+    (f as typeof f & DataSourceInterface).clear = () => { extracted = data = undefined as any; };
+    // Return the function.
+    return f as typeof f & DataSourceInterface;
 }
 
 
-// - Create data source - //
+// - Create cached data source - //
+
+/** Typing for extra features on the returned selector function (after calling createCachedSource). */
+export interface CachedSourceInterface<Data extends any = any, Params extends any[] = any[]> {
+    /** Clear existing cache totally. Optionally define which keys to clear, or a filterer to tell which should be cleaned (by returning `true`). */
+    clear: (onlyClearKeys?: string[] | ((key: string) => boolean)) => void;
+    /** Get the cached memory. Can be mutated to affect cache. */
+    getCached: () => Record<string, (...args: Params) => Data>;
+}
 
 /** Create a cached data source (returns a function).
  * - Just like createDataSource but provides multiple sets of extraction and data memory.
@@ -363,6 +384,12 @@ export function createDataSource<
  * val_someKey === val2_someKey // true.
  * val_anotherKey === val2_anotherKey // true.
  * 
+ * // Clear cache.
+ * mySource.clear();                    // Clear everyhing.
+ * mySource.clear(["someKey"]);         // Clear specific keys.
+ * mySource.clear((key) => key.startsWith("some")); // Only clear cache by keys starting with "some".
+ * const cached = mySource.getCached(); // Get the whole cache - can be mutated.
+ * 
  * ```
  */
 export function createCachedSource<
@@ -373,7 +400,7 @@ export function createCachedSource<
     // Memory.
     const cached: Record<string, (...args: Params) => Data> = {};
     // Return handler.
-    return (...args: any[]): Data => {
+    const f = (...args: any[]): Data => {
         // Get key.
         const cachedKey = cacher(...args as Params, cached);
         // Create a new data source if hadn't one for the cachedKey.
@@ -381,5 +408,19 @@ export function createCachedSource<
             cached[cachedKey] = createDataSource(extractor, producer, depth);
         // Use the data source.
         return cached[cachedKey](...args as Params);
-    }
+    };
+    // Attach method for clearing.
+    (f as typeof f & CachedSourceInterface<Data, Params>).clear = (onlyKeys) => {
+        const isFunc = typeof onlyKeys === "function";
+        for (const cKey of Object.keys(cached)) {
+            // Skip.
+            if (onlyKeys && !(isFunc ? onlyKeys(cKey) : onlyKeys.includes(cKey)))
+                continue;
+            // Delete the key from cache.
+            delete cached[cKey];
+        }
+    };
+    (f as typeof f & CachedSourceInterface<Data, Params>).getCached = () => cached;
+    // Return the function.
+    return f as typeof f & CachedSourceInterface;
 }

@@ -384,6 +384,11 @@ declare function createTrigger<Memory extends any>(onMount?: DataTriggerOnMount<
  *
  */
 declare function createMemo<Data extends any, MemoryArgs extends any[]>(producer: (...memory: MemoryArgs) => Data, depth?: number | CompareDepthMode): (...memory: MemoryArgs) => Data;
+/** Typing for extra features on the returned selector function (after calling createDataSource). */
+interface DataSourceInterface {
+    /** Clears existing memory: effectively, forces a recalc on the next run. */
+    clear: () => void;
+}
 /** Create a data source (returns a function): Functions like createMemo but for data with an intermediary extractor.
  * - Give an extractor that extracts an array out of your customly defined arguments. Can return an array up to 20 typed members or more with `[...] as const` trick.
  * - Whenever the extracted output has changed, the producer callback is triggered.
@@ -435,9 +440,19 @@ declare function createMemo<Data extends any, MemoryArgs extends any[]>(producer
  * const val_MANUAL = mySource_MANUAL({ mode: "dark" }, true);
  * const val_MANUAL_FAIL = mySource_MANUAL({ mode: "FAIL" }, true); // The "FAIL" is red-underlined.
  *
+ * // Clear selector - forces a recalc on the next time.
+ * mySource.clear();
+ *
  * ```
  */
-declare function createDataSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode): (...args: Params) => Data;
+declare function createDataSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, depth?: number | CompareDepthMode): ((...args: Params) => Data) & DataSourceInterface;
+/** Typing for extra features on the returned selector function (after calling createCachedSource). */
+interface CachedSourceInterface<Data extends any = any, Params extends any[] = any[]> {
+    /** Clear existing cache totally. Optionally define which keys to clear, or a filterer to tell which should be cleaned (by returning `true`). */
+    clear: (onlyClearKeys?: string[] | ((key: string) => boolean)) => void;
+    /** Get the cached memory. Can be mutated to affect cache. */
+    getCached: () => Record<string, (...args: Params) => Data>;
+}
 /** Create a cached data source (returns a function).
  * - Just like createDataSource but provides multiple sets of extraction and data memory.
  * - The key (string) for caching is derived by the 3rd argument which is a function that receives the source arguments: `(...origArgs, cached): string`.
@@ -499,8 +514,14 @@ declare function createDataSource<Extracted extends [any?, any?, any?, any?, any
  * val_someKey === val2_someKey // true.
  * val_anotherKey === val2_anotherKey // true.
  *
+ * // Clear cache.
+ * mySource.clear();                    // Clear everyhing.
+ * mySource.clear(["someKey"]);         // Clear specific keys.
+ * mySource.clear((key) => key.startsWith("some")); // Only clear cache by keys starting with "some".
+ * const cached = mySource.getCached(); // Get the whole cache - can be mutated.
+ *
  * ```
  */
 declare function createCachedSource<Extracted extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?] | readonly any[], Data extends any, Params extends any[]>(extractor: (...args: Params) => Extracted, producer: (...args: Extracted) => Data, cacher: (...args: [...args: Params, cached: Record<string, (...args: Params) => Data>]) => string, depth?: number | CompareDepthMode): (...args: Params) => Data;
 
-export { CompareDepthEnum, CompareDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createMemo as createDataMemo, createDataSource, createTrigger as createDataTrigger, createMemo, createTrigger, deepCopy, numberRange, orderArray, orderedIndex };
+export { CachedSourceInterface, CompareDepthEnum, CompareDepthMode, CreateCachedSource, CreateDataSource, DataExtractor, DataSourceInterface, DataTriggerOnMount, DataTriggerOnUnmount, areEqual, areEqualBy, cleanIndex, createCachedSource, createMemo as createDataMemo, createDataSource, createTrigger as createDataTrigger, createMemo, createTrigger, deepCopy, numberRange, orderArray, orderedIndex };

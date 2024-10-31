@@ -2,6 +2,8 @@
 
 ### Added aliases
 - Added alias `createMemo` for `createDataMemo` and likewise `createTrigger` for `createDataTrigger`. (They are now the preferred names.)
+- Added support for `createDataSource` and `createCachedSource` for clearing old memory / cache using an attached function (on the function).
+    * For example: `const mySource = createDataSource(...); mySource.clear();`
 
 ## v1.0.1
 

@@ -23,9 +23,9 @@ There are 3 kinds of tools available.
 - And `areEqualBy(a, b, compareBy)` for objects specialized to utilizing the `CompareDepthEnum`.
 
 ### [3. DATA MEMO HELPERS](#3-data-memo-helpers-doc)
-- `createDataTrigger` triggers a callback when reference data is changed from previous time.
-- `createDataMemo` recomputes / reuses data based on arguments: if changed, calls the producer callback.
-- `createDataSource` is like createDataMemo but with an extraction process before the producer callback.
+- `createTrigger` triggers a callback when reference data is changed from previous time.
+- `createMemo` recomputes / reuses data based on arguments: if changed, calls the producer callback.
+- `createDataSource` is like createMemo but with an extraction process before the producer callback.
 - `createCachedSource` is like createDataSource but creates a new data source for each cacheKey.
 
 ---
@@ -256,9 +256,9 @@ areEqualBy(a, b, { props: "never", state: "always" });      // false, since stat
 - Memos, triggers and data sources are especially useful in state based refreshing systems that compare previous and next state to determine refreshing needs.
 - The basic concept is to feed argument(s) to a function, who performs a comparison on them to determine whether to trigger change (= a custom callback).
 
-### library - data: `createDataMemo`
+### library - data: `createMemo` / `createDataMemo`
 
-- `createDataMemo` helps to reuse data by comparing arguments. By default, only recomputes if any arg was changed.
+- `createMemo` helps to reuse data by comparing arguments. By default, only recomputes if any arg was changed.
 
 ```typescript
 
@@ -267,7 +267,7 @@ type Input = { name: string; score: number; };
 type Output = { winner: string | null; loser: string | null; difference: number; };
 
 // Create a function that can be called to return updated data if arguments changed.
-const onResults = createDataMemo(
+const onResults = createMemo(
     // 1st arg is the producer callback that should return the desired data.
     // .. It's only triggered when either (a, b) is changed from last time.
     (a: Input, b: Input): Output => {
@@ -307,16 +307,16 @@ result7 === result8     // true
 
 ```
 
-### library - data: `createDataTrigger`
+### library - data: `createTrigger` / `createDataTrigger`
 
-- `createDataTrigger` is similar to DataMemo, but its purpose is to trigger a callback on mount.
+- `createTrigger` is similar to DataMemo, but its purpose is to trigger a callback on mount.
 - In addition, the mount callback can return another callback for unmounting, which is called if the mount callback gets overridden upon usage (= when memory changed and a new callback was provided).
 
 ```typescript
 
 // Create a function that can be called to trigger a callback when the reference data is changed from the last time
 type Memory = { id: number; text: string; };
-const myTrigger = createDataTrigger<Memory>(
+const myTrigger = createTrigger<Memory>(
     // 1st arg is an optional (but often used) _mount_ callback.
     (newMem, oldMem) => {
         // Run upon change.
@@ -397,6 +397,9 @@ const val_FAIL = mySource({ mode: "FAIL" }, true); // The "FAIL" is red-underlin
 const val_MANUAL = mySource_MANUAL({ mode: "dark" }, true);
 const val_MANUAL_FAIL = mySource_MANUAL({ mode: "FAIL" }, true); // The "FAIL" is red-underlined.
 
+// Clear selector - forces a recalc on the next time.
+mySource.clear();
+
 ```
 
 ### library - data: `createCachedSource`
@@ -454,6 +457,12 @@ let val2_anotherKey = mySource(settings2, special2, "anotherKey");
 // Validate claims.
 val_someKey === val2_someKey // true.
 val_anotherKey === val2_anotherKey // true.
+
+// Clear cache.
+mySource.clear();                    // Clear everyhing.
+mySource.clear(["someKey"]);         // Clear specific keys.
+mySource.clear((key) => key.startsWith("some")); // Only clear cache by keys starting with "some".
+const cached = mySource.getCached(); // Get the whole cache - can be mutated.
 
 ```
 
